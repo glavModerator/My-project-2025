@@ -1,0 +1,142 @@
+import pygame
+import random
+
+# Ініціалізація
+pygame.init()
+WIDTH, HEIGHT = 400, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+clock = pygame.time.Clock()
+font = pygame.font.SysFont("Arial", 30)
+
+# Кольори
+WHITE = (255, 255, 255)
+RED = (200, 0, 0)
+BLUE = (0, 100, 255)
+GRAY = (50, 50, 50)
+
+# Гравець
+player = pygame.Rect(WIDTH//2 - 20, HEIGHT - 80, 40, 60)
+player_speed = 5
+
+# Ворожі машини
+enemy_speed = 4
+enemies = []
+spawn_timer = 0
+
+# Ігровий цикл
+running = True
+while running:
+    screen.fill(GRAY)
+    pygame.draw.rect(screen, BLUE, player)
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # Рух гравця
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT] and player.left > 0:
+        player.x -= player_speed
+    if keys[pygame.K_RIGHT] and player.right < WIDTH:
+        player.x += player_speed
+
+    # Спавн ворогів
+    spawn_timer += 1
+    if spawn_timer >= 30:
+        enemy_x = random.randint(0, WIDTH - 40)
+        enemy = pygame.Rect(enemy_x, -60, 40, 60)
+        enemies.append(enemy)
+        spawn_timer = 0
+
+    # Рух ворогів
+    for enemy in enemies[:]:
+        enemy.y += enemy_speed
+        pygame.draw.rect(screen, RED, enemy)
+
+        # Колізія
+        if player.colliderect(enemy):
+            text = font.render("Аварія!", True, WHITE)
+            screen.blit(text, (WIDTH//2 - text.get_width()//2, HEIGHT//2))
+            pygame.display.flip()
+            pygame.time.wait(2000)
+            running = False
+
+        # Видалити ворогів, які вийшли за екран
+        if enemy.top > HEIGHT:
+            enemies.remove(enemy)
+
+    pygame.display.flip()
+    clock.tick(60)
+
+pygame.quit()
+import pygame
+import random
+
+# Ініціалізація
+pygame.init()
+WIDTH, HEIGHT = 400, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+clock = pygame.time.Clock()
+font = pygame.font.SysFont("Arial", 30)
+
+# Кольори
+WHITE = (255, 255, 255)
+RED = (200, 0, 0)
+BLUE = (0, 100, 255)
+GRAY = (50, 50, 50)
+
+# Гравець
+player = pygame.Rect(WIDTH//2 - 20, HEIGHT - 80, 40, 60)
+player_speed = 5
+
+# Ворожі машини
+enemy_speed = 4
+enemies = []
+spawn_timer = 0
+
+# Ігровий цикл
+running = True
+while running:
+    screen.fill(GRAY)
+    pygame.draw.rect(screen, BLUE, player)
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # Рух гравця
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT] and player.left > 0:
+        player.x -= player_speed
+    if keys[pygame.K_RIGHT] and player.right < WIDTH:
+        player.x += player_speed
+
+    # Спавн ворогів
+    spawn_timer += 1
+    if spawn_timer >= 30:
+        enemy_x = random.randint(0, WIDTH - 40)
+        enemy = pygame.Rect(enemy_x, -60, 40, 60)
+        enemies.append(enemy)
+        spawn_timer = 0
+
+    # Рух ворогів
+    for enemy in enemies[:]:
+        enemy.y += enemy_speed
+        pygame.draw.rect(screen, RED, enemy)
+
+        # Колізія
+        if player.colliderect(enemy):
+            text = font.render("Аварія!", True, WHITE)
+            screen.blit(text, (WIDTH//2 - text.get_width()//2, HEIGHT//2))
+            pygame.display.flip()
+            pygame.time.wait(2000)
+            running = False
+
+        # Видалити ворогів, які вийшли за екран
+        if enemy.top > HEIGHT:
+            enemies.remove(enemy)
+
+    pygame.display.flip()
+    clock.tick(60)
+
+pygame.quit()
