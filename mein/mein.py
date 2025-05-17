@@ -1,132 +1,116 @@
-from pygame import *
-from random import randint
+import pygame
+import random
 from time import time as timer
-import random 
 
-# нам потрібні такі картинки:
+# Ініціалізація
+pygame.init()
+WIDTH, HEIGHT = 400, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+clock = pygame.time.Clock()
+font = pygame.font.SysFont("Arial", 30)
 img_back = "doroga.jpg"  # фон гри
-img_car = "car.png"  # герой
-img_enemy = "polisecar.png"  # ворог
 
+# Кольори
+WHITE = (255, 255, 255)
+RED = (200, 0, 0)
+BLUE = (0, 100, 255)
+GRAY = (50, 50, 50)
 
-# створюємо віконце
-win_width = 700
-win_height = 500
-display.set_caption("Перегони")
-win = display.set_mode((win_width, win_height))
-background = transform.scale(image.load(img_back),
-                             (win_width, win_height))
-
-
-class GameSprite(sprite.Sprite):
+class GameSprite(pygame.sprite.Sprite):
     def __init__(self, player_image, player_x, player_y,  # один рядок
                  size_x, size_y, player_speed):
-        sprite.Sprite.__init__(self)
-        self.image = transform.scale(  # один рядок
-            image.load(player_image), (size_x, size_y))
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.transform.scale(  # один рядок
+            pygame.image.load(player_image), (size_x, size_y))
         self.speed = player_speed
         self.rect = self.image.get_rect()
         self.rect.x = player_x
         self.rect.y = player_y
 
     def reset(self):
-        win.blit(self.image, (self.rect.x, self.rect.y))
-
-
-# Класс машины
-class Car(GameSprite):
-    def __init__(self, player_image, size_x, size_y):
-        super().__init__(player_image, win_width // 2, win_height - size_y - 10,  size_x, size_y, 5)
-
-
-class PlayerCar(Car):
-    def __init__(self, player_image, size_x, size_y):
-        super().__init__(player_image, size_x, size_y)
-        self.left = False
-        self.right = False
-
-    def move(self):
-        # for obs in obstacles:
-        #     if abs(self.rect.y - obs.y) < 150 and obs.x < self.rect.x + self.win_width and obs.x + obs.win_width > self.rect.x:
-        #         if self.rect.x > win_width // 2:
-        #             self.rect.x -= self.speed
-        #         else:
-        #             self.rect.x += self.speed
-        if self.left:
-            self.rect.x -= 5
-        if self.right:
-            self.rect.x += 5
+        screen.blit(self.image, (self.rect.x, self.rect.y))
 
 
 class Background(GameSprite):
     def move(self, speed):
-        self.rect += speed
-        if self.rect.y > win_height:
-            self.rect.y = -win_height
+        self.rect.y += speed
+        if self.rect.y > HEIGHT:
+            self.rect.y = -HEIGHT
+
+# Гравець
+player = pygame.Rect(WIDTH//2 - 20, HEIGHT - 80, 40, 60)
+player_img = pygame.transform.scale(pygame.image.load("car.png"), (player.width, player.height))
+player_speed = 5
+points = 0
+now_time = timer()
 
 
-# Класс препятствий
-class Obstacle:
-    def __init__(self):
-        self.win_width = 50
-        self.height = 50
-        self.x = random.randint(0, win_width - self.win_width)
-        self.y = -self.height
-        self.speed = 5
+bg_1 = Background(img_back, 0, 0, WIDTH, HEIGHT, player_speed)
+bg_2 = Background(img_back, 0, -HEIGHT, WIDTH, HEIGHT, player_speed)
 
-    def draw(self, win):
-        draw.rect(win, (255, 0, 0), (self.x, self.y, self.width, self.height))
+# Ворожі машини
+enemy_speed = 4
+enemies = []
+enemies_img = []
+spawn_timer = 0
 
-    def move(self):
-        self.y += self.speed
+# Ігровий цикл
+running = True
+while running:
+    bg_1.move(2)
+    bg_1.reset()
+    bg_2.move(2)
+    bg_2.reset()
+    screen.blit(player_img, (player.x, player.y))
+    # pygame.draw.rect(screen, BLUE, player)
 
-# Основной цикл игры
-def main():
-    run = True
-    clock = time.Clock()
-    car = PlayerCar(img_car, 50, 100)
-    bg_1 = Background(img_back, 0, 0, win_width, win_height, car.speed)
-    bg_2 = Background(img_back, 0, -win_height, win_width, win_height, car.speed)
-    # obstacles = [Obstacle()]
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
 
-    while run:
-        clock.tick(60)
-        win.fill((255, 255, 255))
+    # Рух гравця
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT] and player.left > 0:
+        player.x -= player_speed
+    if keys[pygame.K_RIGHT] and player.right < WIDTH:
+        player.x += player_speed
 
-        for e in event.get():
-            if e.type == QUIT:
-                run = False
-            if e.type == KEYDOWN:
-                if e.key == K_LEFT:
-                    car.left = True
-                if e.key == K_RIGHT:
-                    car.right = True
-            if e.type == KEYUP:
-                if e.key == K_LEFT:
-                    car.left = False
-                if e.key == K_RIGHT:
-                    car.right = False
+    # Спавн ворогів
+    spawn_timer += 1
+    if spawn_timer >= 30:
+        enemy_x = random.randint(0, WIDTH - 40)
+        enemy = pygame.Rect(enemy_x, -60, 40, 60)
+        police_img = pygame.transform.scale(pygame.image.load("polisecars.png"), (enemy.width, enemy.height))
+        enemies.append(enemy)
+        enemies_img.append(police_img)
+        spawn_timer = 0
 
 
 
-        # Движение машины и препятствий
-        car.move()
-        # for obs in obstacles:
-        #     obs.move()
-        #     if obs.y > win_height:
-        #         obstacles.remove(obs)
-        #         obstacles.append(Obstacle())
 
-        # Отрисовка
-        car.update()
-        car.reset()
+    # Рух ворогів
+    for i in range(len(enemies)):
+        enemies[i].y += enemy_speed
+        # pygame.draw.rect(screen, RED, enemies[i])
+        screen.blit(enemies_img[i], (enemies[i].x, enemies[i].y))
 
-        # for obs in obstacles:
-        #     obs.draw(win)
+        # Колізія
+        if player.colliderect(enemies[i]):
+            text = font.render("Аварія!", True, WHITE)
+            screen.blit(text, (WIDTH//2 - text.get_width()//2, HEIGHT//2))
+            pygame.display.flip()
+            pygame.time.wait(2000)
+            running = False
 
-        display.update()
+        # Видалити ворогів, які вийшли за екран
+        if enemy.top > HEIGHT:
+            enemies.remove(enemies[i])
 
-    quit()
+        text_points = font.render("Бали: " + str(points), True, WHITE)
+        screen.blit(text_points, (20, 20))
+        points = int(timer() - now_time)
 
-if __name__ == "__main__":
-    main()
+    pygame.display.flip()
+    clock.tick(60)
+
+pygame.quit()
